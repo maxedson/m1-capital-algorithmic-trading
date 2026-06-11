@@ -1,89 +1,71 @@
-const platformSections = [
-  {
-    title: "Execution Layer",
-    body: "Build order routing, position sizing, and risk checks against the Charles Schwab API in isolated services.",
-  },
-  {
-    title: "Strategy Engine",
-    body: "Model signal generation, backtesting assumptions, and scheduling separately from account connectivity.",
-  },
-  {
-    title: "Operations",
-    body: "Track account health, API token status, logs, and deployment posture before live trading is enabled.",
-  },
-];
+import Link from "next/link";
+import { SiteShell } from "@/components/site-shell";
+import { commandStats, focusCards, streakStats } from "@/lib/dashboard-data";
 
 export default function Home() {
   return (
-    <main style={{ padding: "48px 20px 80px" }}>
-      <section
-        style={{
-          margin: "0 auto",
-          maxWidth: 1120,
-          border: "1px solid var(--surface-border)",
-          background: "var(--surface)",
-          backdropFilter: "blur(18px)",
-          boxShadow: "0 30px 80px rgba(23, 33, 43, 0.12)",
-        }}
-      >
-        <div style={{ padding: "56px 24px 40px", borderBottom: "1px solid var(--surface-border)" }}>
-          <p
-            style={{
-              margin: 0,
-              color: "var(--accent-strong)",
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-              fontSize: 12,
-            }}
-          >
-            Standalone Project Scaffold
-          </p>
-          <h1 style={{ margin: "16px 0 12px", fontSize: "clamp(2.5rem, 8vw, 5.5rem)", lineHeight: 0.95 }}>
-            M1 Capital
-            <br />
-            Algorithmic Trading
-          </h1>
-          <p style={{ maxWidth: 720, margin: 0, color: "var(--muted)", fontSize: 18, lineHeight: 1.6 }}>
-            A clean base for building a Schwab-connected algorithmic trading platform without any dependency on the
-            PRYCD-MVP codebase or git history.
-          </p>
+    <SiteShell
+      eyebrow="Command Center"
+      title="Your personal trading console."
+      description="This UI is optimized for you, not for users. It should feel fast, rewarding, and brutally clear about what matters: capital, discipline, and execution."
+      aside={
+        <div className="hero-score">
+          <span>Session Rank</span>
+          <strong>S+</strong>
+          <small>7 green days in a row</small>
         </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 20,
-            padding: 24,
-          }}
-        >
-          {platformSections.map((section) => (
-            <article
-              key={section.title}
-              style={{
-                minHeight: 220,
-                padding: 24,
-                border: "1px solid var(--surface-border)",
-                background: "rgba(255, 255, 255, 0.66)",
-              }}
-            >
-              <p
-                style={{
-                  margin: 0,
-                  color: "var(--accent)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.12em",
-                  fontSize: 12,
-                }}
-              >
-                Module
-              </p>
-              <h2 style={{ margin: "18px 0 12px", fontSize: 28 }}>{section.title}</h2>
-              <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.7 }}>{section.body}</p>
-            </article>
-          ))}
-        </div>
+      }
+    >
+      <section className="stats-grid">
+        {commandStats.map((stat) => (
+          <article key={stat.label} className={`panel stat-panel tone-${stat.tone}`}>
+            <span>{stat.label}</span>
+            <strong>{stat.value}</strong>
+          </article>
+        ))}
       </section>
-    </main>
+
+      <section className="content-grid">
+        {focusCards.map((card) => (
+          <Link key={card.title} href={card.href} className="panel card-panel route-panel">
+            <p className="panel-kicker">Open View</p>
+            <h2>{card.title}</h2>
+            <strong className="route-value">{card.value}</strong>
+            <p>{card.meta}</p>
+          </Link>
+        ))}
+      </section>
+
+      <section className="content-grid two-up">
+        <article className="panel">
+          <div className="section-heading">
+            <div>
+              <p className="panel-kicker">Streaks</p>
+              <h2>Behavior loop</h2>
+            </div>
+          </div>
+
+          <div className="bullet-stack">
+            {streakStats.map((item) => (
+              <div key={item.label} className="mini-stat">
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+                <small>{item.detail}</small>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel vault-panel">
+          <p className="panel-kicker">Design Direction</p>
+          <h2>Gamified, but not childish.</h2>
+          <p>
+            The right approach is not &quot;social investing app.&quot; It is a compact console with momentum cues: streaks,
+            scores, heat, badges, and progress. That gives you the Robinhood-style energy without wasting space on
+            onboarding or marketing.
+          </p>
+        </article>
+      </section>
+    </SiteShell>
   );
 }
