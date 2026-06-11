@@ -143,7 +143,6 @@ export const streakStats = [
 ];
 
 export const focusCards = [
-  { title: "Performance", value: formatPercent(tradingSystemState.snapshot.ytdReturnPct), meta: "YTD", href: "/performance" },
   { title: "Trading", value: `${tradingSystemState.session.ordersSent} live orders`, meta: "2 queued", href: "/trading" },
   { title: "Backtests", value: `${tradingSystemState.backtests.length} active models`, meta: "1 promoted candidate", href: "/backtesting" },
 ];

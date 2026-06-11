@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 
 const navigation = [
-  { href: "/", label: "Command", short: "01" },
-  { href: "/performance", label: "Performance", short: "02" },
-  { href: "/trading", label: "Execution", short: "03" },
-  { href: "/backtesting", label: "Research", short: "04" },
+  { href: "/", label: "Dashboard" },
+  { href: "/trading", label: "Execution" },
+  { href: "/backtesting", label: "Research" },
 ];
 
 type SiteShellProps = {
@@ -46,7 +45,6 @@ export function SiteShell({ eyebrow, title, description, aside, children }: Site
                     className={`sidenav-link${isActive ? " is-active" : ""}`}
                     aria-current={isActive ? "page" : undefined}
                   >
-                    <span className="sidenav-index">{item.short}</span>
                     <span>{item.label}</span>
                   </Link>
                 );
