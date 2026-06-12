@@ -38,6 +38,50 @@ function strategyTone(status: string): Tone {
   return "neutral";
 }
 
+function formatSignal(signal: TradingSystemState["watchlist"][number]["signal"]) {
+  switch (signal) {
+    case "no_signal":
+      return "No Signal";
+    case "near_long":
+      return "Near Long";
+    case "near_short":
+      return "Near Short";
+    case "long_triggered":
+      return "Long Triggered";
+    case "short_triggered":
+      return "Short Triggered";
+    case "exit_triggered":
+      return "Exit Triggered";
+    default:
+      return signal;
+  }
+}
+
+function formatReason(reason: NonNullable<TradingSystemState["watchlist"][number]["reason"]>) {
+  switch (reason) {
+    case "long_open":
+      return "Long Open";
+    case "short_open":
+      return "Short Open";
+    case "exit_signal_active":
+      return "Exit Signal Active";
+    case "insufficient_capital":
+      return "Insufficient Capital";
+    case "max_positions_reached":
+      return "Max Positions Reached";
+    case "risk_limit":
+      return "Risk Limit";
+    case "no_active_entry_signal":
+      return "No Active Entry Signal";
+    case "signal_not_confirmed":
+      return "Signal Not Confirmed";
+    case "cooldown":
+      return "Cooldown";
+    default:
+      return reason;
+  }
+}
+
 export const tradingSystemState: TradingSystemState = {
   snapshot: {
     asOf: "2026-06-11T13:30:00-04:00",
@@ -128,51 +172,319 @@ export const tradingSystemState: TradingSystemState = {
     },
   ],
   watchlist: [
-    { symbol: "NVDA", setup: "Momentum Breakout", signal: "ready", score: 96, price: 142.3, changePct: 2.8, signalAgeMinutes: 18, inPosition: true },
-    { symbol: "AMD", setup: "Trend Continuation", signal: "armed", score: 88, price: 160.9, changePct: 1.4, signalAgeMinutes: 9, inPosition: true },
+    { symbol: "NVDA", setup: "Momentum Breakout", side: "long", status: "in_position", signal: "long_triggered", score: 96, price: 142.3, capitalRequired: 2846, changePct: 2.8, signalAgeMinutes: 18, reason: "long_open" },
+    { symbol: "AMD", setup: "Trend Continuation", side: "long", status: "in_position", signal: "long_triggered", score: 88, price: 160.9, capitalRequired: 6436, changePct: 1.4, signalAgeMinutes: 9, reason: "long_open" },
     {
       symbol: "MSFT",
       setup: "Opening Range Hold",
-      signal: "ready",
+      side: "long",
+      status: "queued",
+      signal: "long_triggered",
       score: 84,
       price: 468.7,
+      capitalRequired: 9374,
       changePct: 0.9,
       signalAgeMinutes: 6,
-      inPosition: false,
-      blockedReason: "awaiting confirmation",
+      reason: "insufficient_capital",
     },
     {
       symbol: "META",
       setup: "Relative Strength Pivot",
-      signal: "armed",
+      side: "long",
+      status: "queued",
+      signal: "long_triggered",
       score: 81,
       price: 534.2,
+      capitalRequired: 8013,
       changePct: 1.1,
       signalAgeMinutes: 27,
-      inPosition: false,
-      blockedReason: "risk full",
+      reason: "max_positions_reached",
     },
     {
       symbol: "TSLA",
       setup: "Range Expansion",
-      signal: "waiting",
+      side: "short",
+      status: "monitoring",
+      signal: "near_short",
       score: 78,
       price: 181.6,
+      capitalRequired: 3632,
       changePct: -0.6,
       signalAgeMinutes: 44,
-      inPosition: false,
-      blockedReason: "spread too wide",
+      reason: "no_active_entry_signal",
     },
     {
       symbol: "AVGO",
       setup: "Late Day Squeeze",
-      signal: "waiting",
+      side: "long",
+      status: "monitoring",
+      signal: "near_long",
       score: 73,
       price: 1778.2,
+      capitalRequired: 7113,
       changePct: 0.4,
       signalAgeMinutes: 58,
-      inPosition: false,
-      blockedReason: "cooldown",
+      reason: "signal_not_confirmed",
+    },
+    {
+      symbol: "AAPL",
+      setup: "VWAP Reclaim",
+      side: "long",
+      status: "in_position",
+      signal: "long_triggered",
+      score: 92,
+      price: 214.3,
+      capitalRequired: 4286,
+      changePct: 1.1,
+      signalAgeMinutes: 14,
+      reason: "long_open",
+    },
+    {
+      symbol: "AMZN",
+      setup: "Opening Drive",
+      side: "long",
+      status: "in_position",
+      signal: "long_triggered",
+      score: 86,
+      price: 198.5,
+      capitalRequired: 3970,
+      changePct: 0.8,
+      signalAgeMinutes: 21,
+      reason: "long_open",
+    },
+    {
+      symbol: "GOOGL",
+      setup: "Gap Continuation",
+      side: "long",
+      status: "queued",
+      signal: "long_triggered",
+      score: 89,
+      price: 176.2,
+      capitalRequired: 3524,
+      changePct: 1.6,
+      signalAgeMinutes: 11,
+      reason: "insufficient_capital",
+    },
+    {
+      symbol: "NFLX",
+      setup: "Trend Pullback",
+      side: "long",
+      status: "queued",
+      signal: "long_triggered",
+      score: 83,
+      price: 691.8,
+      capitalRequired: 4151,
+      changePct: 0.7,
+      signalAgeMinutes: 19,
+      reason: "risk_limit",
+    },
+    {
+      symbol: "CRM",
+      setup: "Relative Strength Pivot",
+      side: "long",
+      status: "queued",
+      signal: "long_triggered",
+      score: 79,
+      price: 267.4,
+      capitalRequired: 4011,
+      changePct: 0.5,
+      signalAgeMinutes: 24,
+      reason: "max_positions_reached",
+    },
+    {
+      symbol: "SHOP",
+      setup: "Inside Day Break",
+      side: "long",
+      status: "queued",
+      signal: "long_triggered",
+      score: 77,
+      price: 74.6,
+      capitalRequired: 3730,
+      changePct: 1.3,
+      signalAgeMinutes: 29,
+      reason: "insufficient_capital",
+    },
+    {
+      symbol: "QCOM",
+      setup: "Channel Break",
+      side: "long",
+      status: "monitoring",
+      signal: "near_long",
+      score: 82,
+      price: 171.9,
+      capitalRequired: 3438,
+      changePct: 0.4,
+      signalAgeMinutes: 16,
+      reason: "signal_not_confirmed",
+    },
+    {
+      symbol: "MU",
+      setup: "Compression Coil",
+      side: "long",
+      status: "monitoring",
+      signal: "near_long",
+      score: 76,
+      price: 129.7,
+      capitalRequired: 3891,
+      changePct: 0.2,
+      signalAgeMinutes: 33,
+      reason: "no_active_entry_signal",
+    },
+    {
+      symbol: "PLTR",
+      setup: "Momentum Stair-Step",
+      side: "long",
+      status: "monitoring",
+      signal: "near_long",
+      score: 74,
+      price: 32.4,
+      capitalRequired: 3240,
+      changePct: 1.9,
+      signalAgeMinutes: 26,
+      reason: "signal_not_confirmed",
+    },
+    {
+      symbol: "UBER",
+      setup: "Support Bounce",
+      side: "long",
+      status: "monitoring",
+      signal: "no_signal",
+      score: 71,
+      price: 84.1,
+      capitalRequired: 3364,
+      changePct: -0.1,
+      signalAgeMinutes: 41,
+      reason: "no_active_entry_signal",
+    },
+    {
+      symbol: "LLY",
+      setup: "Failed Break Reversal",
+      side: "short",
+      status: "queued",
+      signal: "short_triggered",
+      score: 87,
+      price: 812.5,
+      capitalRequired: 4063,
+      changePct: -0.9,
+      signalAgeMinutes: 13,
+      reason: "insufficient_capital",
+    },
+    {
+      symbol: "COST",
+      setup: "Range Breakdown",
+      side: "short",
+      status: "monitoring",
+      signal: "near_short",
+      score: 75,
+      price: 842.7,
+      capitalRequired: 3371,
+      changePct: -0.4,
+      signalAgeMinutes: 22,
+      reason: "signal_not_confirmed",
+    },
+    {
+      symbol: "ADBE",
+      setup: "Lower High Reject",
+      side: "short",
+      status: "monitoring",
+      signal: "near_short",
+      score: 72,
+      price: 503.8,
+      capitalRequired: 3527,
+      changePct: -0.6,
+      signalAgeMinutes: 37,
+      reason: "no_active_entry_signal",
+    },
+    {
+      symbol: "INTU",
+      setup: "Weak Open Fade",
+      side: "short",
+      status: "queued",
+      signal: "short_triggered",
+      score: 80,
+      price: 654.4,
+      capitalRequired: 3926,
+      changePct: -0.7,
+      signalAgeMinutes: 17,
+      reason: "risk_limit",
+    },
+    {
+      symbol: "PANW",
+      setup: "Breakout Retest",
+      side: "long",
+      status: "monitoring",
+      signal: "near_long",
+      score: 78,
+      price: 318.6,
+      capitalRequired: 3505,
+      changePct: 0.6,
+      signalAgeMinutes: 28,
+      reason: "cooldown",
+    },
+    {
+      symbol: "SNOW",
+      setup: "Volume Expansion",
+      side: "long",
+      status: "queued",
+      signal: "long_triggered",
+      score: 81,
+      price: 156.2,
+      capitalRequired: 3124,
+      changePct: 1.5,
+      signalAgeMinutes: 9,
+      reason: "max_positions_reached",
+    },
+    {
+      symbol: "ROKU",
+      setup: "Reversal Base",
+      side: "long",
+      status: "monitoring",
+      signal: "no_signal",
+      score: 68,
+      price: 61.3,
+      capitalRequired: 3065,
+      changePct: -0.3,
+      signalAgeMinutes: 49,
+      reason: "no_active_entry_signal",
+    },
+    {
+      symbol: "MDB",
+      setup: "Trend Exhaustion",
+      side: "short",
+      status: "monitoring",
+      signal: "near_short",
+      score: 70,
+      price: 247.8,
+      capitalRequired: 3221,
+      changePct: -0.8,
+      signalAgeMinutes: 31,
+      reason: "signal_not_confirmed",
+    },
+    {
+      symbol: "ANET",
+      setup: "Leader Continuation",
+      side: "long",
+      status: "in_position",
+      signal: "long_triggered",
+      score: 90,
+      price: 312.1,
+      capitalRequired: 3745,
+      changePct: 1.2,
+      signalAgeMinutes: 12,
+      reason: "long_open",
+    },
+    {
+      symbol: "MELI",
+      setup: "Failed Pop Short",
+      side: "short",
+      status: "in_position",
+      signal: "short_triggered",
+      score: 85,
+      price: 1784.9,
+      capitalRequired: 3569,
+      changePct: -1.1,
+      signalAgeMinutes: 23,
+      reason: "short_open",
     },
   ],
   orders: [
@@ -232,7 +544,7 @@ const deployedCapital =
 const recentPeakValue = 154980;
 const drawdownFromPeakPct =
   ((tradingSystemState.snapshot.accountValue - recentPeakValue) / recentPeakValue) * 100;
-const readySignals = tradingSystemState.watchlist.filter((candidate) => candidate.signal === "ready" && !candidate.inPosition);
+const queuedSignals = tradingSystemState.watchlist.filter((candidate) => candidate.status === "queued");
 const positionsNearStop = openPositions.filter((position) => {
   const denominator = Math.abs(position.markPrice - position.stopPrice);
   if (denominator === 0) return true;
@@ -322,7 +634,7 @@ export const executionStats = [
 export const executionSummary = [
   { label: "Open Risk", value: formatCurrency(openRisk), tone: "warm" as const },
   { label: "Near Stop", value: String(positionsNearStop.length), tone: positionsNearStop.length > 0 ? ("warm" as const) : ("neutral" as const) },
-  { label: "Ready Signals", value: String(readySignals.length), tone: "positive" as const },
+  { label: "Queued Signals", value: String(queuedSignals.length), tone: "warm" as const },
 ];
 
 export const positionsSummary = executionSummary.slice(0, 2);
@@ -333,61 +645,68 @@ export const currentPositions = [...openPositions]
   .map((position) => ({
     symbol: position.symbol,
     side: position.side === "long" ? "Long" : "Short",
-    quantity: position.quantity.toLocaleString("en-US"),
     entry: formatCurrency(position.entryPrice),
     mark: formatCurrency(position.markPrice),
     weight: `${position.weightPct.toFixed(1)}%`,
     risk: formatCurrency(position.riskAmount),
-    timeInTrade: formatMinutes(
-      Math.max(
-        1,
-        Math.round(
-          (new Date(tradingSystemState.session.asOf).getTime() - new Date(position.openedAt).getTime()) / 60000,
-        ),
-      ),
-    ),
-    stopDistance:
-      `${(((Math.abs(position.markPrice - position.stopPrice) / position.markPrice) * 100)).toFixed(1)}%`,
-    targetDistance:
-      `${(((Math.abs(position.targetPrice - position.markPrice) / position.markPrice) * 100)).toFixed(1)}%`,
+    stop: formatCurrency(position.stopPrice),
+    target: formatCurrency(position.targetPrice),
+    riskAmount: position.riskAmount,
+    isNearStop: ((Math.abs(position.markPrice - position.stopPrice) / position.markPrice) * 100) <= 1.2,
     pnl: formatSignedCurrency(position.pnl),
     tone:
-      position.riskAmount >= 100
-        ? ("warm" as const)
-        : position.pnl >= 0
-          ? ("positive" as const)
-          : ("negative" as const),
+      position.pnl > 0
+        ? ("positive" as const)
+        : position.pnl < 0
+          ? ("negative" as const)
+          : ("neutral" as const),
   }));
 
-export const watchlistSections = [
-  { title: "In Position", key: "in-position" as const, rows: tradingSystemState.watchlist.filter((candidate) => candidate.inPosition) },
-  { title: "Ready", key: "ready" as const, rows: tradingSystemState.watchlist.filter((candidate) => !candidate.inPosition && candidate.signal === "ready") },
-  { title: "Armed", key: "armed" as const, rows: tradingSystemState.watchlist.filter((candidate) => !candidate.inPosition && candidate.signal === "armed") },
-  { title: "Waiting", key: "waiting" as const, rows: tradingSystemState.watchlist.filter((candidate) => !candidate.inPosition && candidate.signal === "waiting") },
-].map((section) => ({
-  ...section,
-  rows: [...section.rows]
-    .sort((left, right) => right.score - left.score)
-    .map((candidate) => ({
+const watchlistStatusRank = {
+  in_position: 0,
+  queued: 1,
+  monitoring: 2,
+} as const;
+
+export const watchlistRows = [...tradingSystemState.watchlist]
+  .sort((left, right) => {
+    const statusDelta = watchlistStatusRank[left.status] - watchlistStatusRank[right.status];
+    if (statusDelta !== 0) return statusDelta;
+    if (right.score !== left.score) return right.score - left.score;
+    return left.signalAgeMinutes - right.signalAgeMinutes;
+  })
+  .map((candidate) => ({
     symbol: candidate.symbol,
     setup: candidate.setup,
-    signal: candidate.signal.charAt(0).toUpperCase() + candidate.signal.slice(1),
-    score: `${candidate.score} / 100`,
-    price: formatCurrency(candidate.price),
-    move: formatPercent(candidate.changePct),
-    signalAge: formatMinutes(candidate.signalAgeMinutes),
-    positionState: candidate.inPosition ? "In Position" : "Watching",
-    whyNotInTrade: candidate.inPosition ? "Active" : candidate.blockedReason ?? "--",
-    tone:
-      !candidate.inPosition && candidate.signalAgeMinutes >= 40
-        ? ("negative" as const)
-        : candidate.signal === "ready"
+    side: candidate.side === "long" ? "Long" : "Short",
+    signal: formatSignal(candidate.signal),
+    signalTone:
+      candidate.signal === "long_triggered" || candidate.signal === "short_triggered"
         ? ("positive" as const)
-        : candidate.signal === "armed"
+        : candidate.signal === "near_long" || candidate.signal === "near_short"
           ? ("warm" as const)
           : ("neutral" as const),
-  })),
-}));
+    status:
+      candidate.status === "in_position"
+        ? "In Position"
+        : candidate.status.charAt(0).toUpperCase() + candidate.status.slice(1),
+    statusTone:
+      candidate.status === "in_position"
+        ? ("positive" as const)
+        : candidate.status === "queued"
+          ? ("warm" as const)
+          : ("neutral" as const),
+    score: `${candidate.score} / 100`,
+    signalAge: formatMinutes(candidate.signalAgeMinutes),
+    positionState: candidate.status === "in_position" ? "In Position" : "Watching",
+    reason: candidate.reason ? formatReason(candidate.reason) : "--",
+    tone:
+      candidate.status === "in_position"
+        ? ("positive" as const)
+        : candidate.status === "queued"
+          ? ("warm" as const)
+          : ("neutral" as const),
+  }));
 
 export const tradeHistory = closedPositions
   .map((position) => {

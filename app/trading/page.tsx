@@ -1,4 +1,5 @@
 import { SiteShell } from "@/components/site-shell";
+import { CurrentPositionsPanel } from "@/components/current-positions-panel";
 import { ModeToggle } from "@/components/mode-toggle";
 import { StrategySelector } from "@/components/strategy-selector";
 import { TradingControls } from "@/components/trading-controls";
@@ -6,11 +7,10 @@ import {
   currentPositions,
   executionStats,
   missionCards,
-  positionsSummary,
   systemStatus,
   tradeHistory,
+  watchlistRows,
   watchlistSummary,
-  watchlistSections,
 } from "@/lib/dashboard-data";
 
 export default function TradingPage() {
@@ -77,50 +77,7 @@ export default function TradingPage() {
       </section>
 
       <section className="content-grid two-up">
-        <article className="panel">
-          <div className="section-heading">
-            <div>
-              <p className="panel-kicker">Live Risk</p>
-              <h2>Current positions</h2>
-            </div>
-            <div className="section-summary-chips">
-              {positionsSummary.map((item) => (
-                <div key={item.label} className={`section-summary-chip tone-${item.tone}`}>
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="trade-table">
-            <div className="table-row table-head positions-head">
-              <span>Symbol</span>
-              <span>Side</span>
-              <span>Qty</span>
-              <span>Weight</span>
-              <span>Risk</span>
-              <span>Time</span>
-              <span>Stop</span>
-              <span>Target</span>
-              <span>P&amp;L</span>
-            </div>
-
-            {currentPositions.map((position) => (
-              <div key={position.symbol} className={`table-row positions-head tone-${position.tone}`}>
-                <span>{position.symbol}</span>
-                <span>{position.side}</span>
-                <span>{position.quantity}</span>
-                <span>{position.weight}</span>
-                <span>{position.risk}</span>
-                <span>{position.timeInTrade}</span>
-                <span>{position.stopDistance}</span>
-                <span>{position.targetDistance}</span>
-                <span>{position.pnl}</span>
-              </div>
-            ))}
-          </div>
-        </article>
+        <CurrentPositionsPanel initialPositions={currentPositions} />
 
         <article className="panel">
           <div className="section-heading">
@@ -138,43 +95,32 @@ export default function TradingPage() {
             </div>
           </div>
 
-          <div className="watchlist-stack">
-            {watchlistSections.map((section) => (
-              <div key={section.key} className="watchlist-section">
-                <div className="watchlist-group-heading">
-                  <strong>{section.title}</strong>
-                  <span>{section.rows.length} names</span>
-                </div>
+          <div className="trade-table watchlist-table-scroll">
+            <div className="table-row table-head watchlist-head">
+              <span>Symbol</span>
+              <span>Side</span>
+              <span>Setup</span>
+              <span>Signal</span>
+              <span>Status</span>
+              <span>Score</span>
+              <span>Age</span>
+              <span>Reason</span>
+            </div>
 
-                <div className="trade-table">
-                  <div className="table-row table-head watchlist-head">
-                    <span>Symbol</span>
-                    <span>Setup</span>
-                    <span>Signal</span>
-                    <span>Score</span>
-                    <span>Price</span>
-                    <span>Move</span>
-                    <span>Age</span>
-                    <span>Reason</span>
-                  </div>
-
-                  {section.rows.map((candidate) => (
-                    <div
-                      key={candidate.symbol}
-                      className={`table-row watchlist-head watchlist-row tone-${candidate.tone}`}
-                      data-active={candidate.positionState === "In Position"}
-                    >
-                      <span>{candidate.symbol}</span>
-                      <span>{candidate.setup}</span>
-                      <span>{candidate.signal}</span>
-                      <span>{candidate.score}</span>
-                      <span>{candidate.price}</span>
-                      <span>{candidate.move}</span>
-                      <span>{candidate.signalAge}</span>
-                      <span className="state-pill">{candidate.whyNotInTrade}</span>
-                    </div>
-                  ))}
-                </div>
+            {watchlistRows.map((candidate) => (
+              <div
+                key={candidate.symbol}
+                className={`table-row watchlist-head watchlist-row tone-${candidate.tone}`}
+                data-active={candidate.positionState === "In Position"}
+              >
+                <span>{candidate.symbol}</span>
+                <span>{candidate.side}</span>
+                <span>{candidate.setup}</span>
+                <span>{candidate.signal}</span>
+                <span>{candidate.status}</span>
+                <span>{candidate.score}</span>
+                <span>{candidate.signalAge}</span>
+                <span className="state-pill">{candidate.reason}</span>
               </div>
             ))}
           </div>
@@ -190,7 +136,7 @@ export default function TradingPage() {
             </div>
           </div>
 
-          <div className="trade-table">
+          <div className="trade-table trade-history-table-scroll">
             <div className="table-row table-head trade-head">
               <span>Symbol</span>
               <span>Side</span>

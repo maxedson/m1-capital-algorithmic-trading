@@ -964,11 +964,38 @@ p {
 }
 
 .positions-head {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: 0.8fr 0.7fr repeat(7, minmax(0, 1fr)) 0.95fr;
 }
 
 .watchlist-head {
-  grid-template-columns: 0.7fr 1.4fr 0.8fr 0.9fr 0.9fr 0.8fr 0.8fr 1.2fr;
+  grid-template-columns: 0.8fr 0.55fr 1.45fr 1fr 1fr 0.8fr 0.75fr 1.35fr;
+}
+
+.watchlist-table-scroll {
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 6px;
+  position: relative;
+}
+
+.positions-table-scroll,
+.trade-history-table-scroll {
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 6px;
+  position: relative;
+}
+
+.watchlist-table-scroll .table-head,
+.positions-table-scroll .table-head,
+.trade-history-table-scroll .table-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background:
+    linear-gradient(180deg, rgba(82, 242, 140, 0.1), rgba(82, 242, 140, 0.05)),
+    var(--surface-strong);
+  box-shadow: 0 10px 18px rgba(7, 17, 13, 0.18);
 }
 
 .watchlist-row[data-active="true"] {
@@ -976,6 +1003,33 @@ p {
   background:
     linear-gradient(90deg, rgba(82, 242, 140, 0.1), transparent 28%),
     rgba(255, 255, 255, 0.03);
+}
+
+.positions-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.positions-override-btn {
+  min-width: 76px;
+  padding: 8px 10px;
+}
+
+.positions-override-note {
+  margin-bottom: 16px;
+  color: var(--warm);
+  font-size: 0.9rem;
+}
+
+.positions-empty-state {
+  align-items: center;
+}
+
+.positions-empty-state span:first-child {
+  color: var(--muted);
 }
 
 .watchlist-stack {

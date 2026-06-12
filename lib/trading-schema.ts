@@ -50,13 +50,30 @@ export type Position = {
 export type WatchlistCandidate = {
   symbol: string;
   setup: string;
-  signal: "ready" | "armed" | "waiting";
+  side: Side;
+  status: "monitoring" | "queued" | "in_position";
+  signal:
+    | "no_signal"
+    | "near_long"
+    | "near_short"
+    | "long_triggered"
+    | "short_triggered"
+    | "exit_triggered";
   score: number;
   price: number;
+  capitalRequired: number;
   changePct: number;
   signalAgeMinutes: number;
-  inPosition: boolean;
-  blockedReason?: "awaiting confirmation" | "risk full" | "cooldown" | "spread too wide";
+  reason?:
+    | "long_open"
+    | "short_open"
+    | "exit_signal_active"
+    | "insufficient_capital"
+    | "max_positions_reached"
+    | "risk_limit"
+    | "no_active_entry_signal"
+    | "signal_not_confirmed"
+    | "cooldown";
 };
 
 export type Order = {
