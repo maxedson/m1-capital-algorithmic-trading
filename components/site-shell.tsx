@@ -17,19 +17,18 @@ type SiteShellProps = {
   children: ReactNode;
 };
 
-function getModeLabel(mode: string, isTrading: boolean): string {
-  if (!isTrading || mode === "standby") return "Standby";
-  if (mode === "live-trading") return "Live Trading";
-  if (mode === "paper-trading") return "Paper Trading";
-  if (mode === "backtesting") return "Backtesting";
+function getModeLabel(scannerState: string, executionState: string): string {
+  if (executionState === "live") return "Live Trading";
+  if (executionState === "paper") return "Paper Trading";
+  if (scannerState === "watchlist") return "Watchlist Only";
   return "Standby";
 }
 
 export function SiteShell({ eyebrow, aside, children }: SiteShellProps) {
   const pathname = usePathname();
-  const { mode, isTrading } = useTrading();
-  const modeLabel = getModeLabel(mode, isTrading);
-  const isStandby = !isTrading || mode === "standby";
+  const { scannerState, executionState } = useTrading();
+  const modeLabel = getModeLabel(scannerState, executionState);
+  const isStandby = scannerState === "off" && executionState === "off";
 
   return (
     <main className="page-shell">

@@ -3,20 +3,27 @@
 import { useTrading } from "@/lib/trading-context";
 
 export function TradingControls() {
-  const { mode, isTrading, setIsTrading, resetPaperTrading, activeStrategy } = useTrading();
+  const {
+    scannerState,
+    executionState,
+    stopWatchlist,
+    startWatchlist,
+    startPaperTrading,
+    startLiveTrading,
+    stopExecution,
+    resetPaperTrading,
+    activeStrategies,
+  } = useTrading();
 
-  const isPaperTrading = mode === "paper-trading";
+  const isPaperTrading = executionState === "paper";
+  const isScannerOff = scannerState === "off";
 
-  const handleStartTrading = () => {
-    if (!activeStrategy) {
-      alert("Please select a strategy first");
-      return;
+  const ensureStrategiesSelected = () => {
+    if (activeStrategies.length === 0) {
+      alert("Please select at least one strategy first");
+      return false;
     }
-    setIsTrading(true);
-  };
-
-  const handleStopTrading = () => {
-    setIsTrading(false);
+    return true;
   };
 
   const handleResetPaper = () => {
@@ -30,14 +37,68 @@ export function TradingControls() {
 
   return (
     <div className="trading-controls">
-      {!isTrading ? (
-        <button onClick={handleStartTrading} className="btn btn-primary">
-          Start Trading
+      {isScannerOff ? (
+        <button
+          onClick={() => {
+            if (!ensureStrategiesSelected()) return;
+            startWatchlist();
+          }}
+          className="btn btn-primary"
+        >
+          Start Watchlist
         </button>
       ) : (
-        <button onClick={handleStopTrading} className="btn btn-secondary">
-          Stop Trading
-        </button>
+        <>
+          {executionState === "off" ? (
+            <>
+              <button onClick={stopWatchlist} className="btn btn-secondary">
+                Stop Watchlist
+              </button>
+              <button
+                onClick={() => {
+                  if (!ensureStrategiesSelected()) return;
+                  startPaperTrading();
+                }}
+                className="btn btn-primary"
+              >
+                Start Paper
+              </button>
+              <button
+                onClick={() => {
+                  if (!ensureStrategiesSelected()) return;
+                  startLiveTrading();
+                }}
+                className="btn btn-secondary"
+              >
+                Start Live
+              </button>
+            </>
+          ) : executionState === "paper" ? (
+            <>
+              <button onClick={stopExecution} className="btn btn-secondary">
+                Stop Paper
+              </button>
+              <button
+                onClick={() => {
+                  if (!ensureStrategiesSelected()) return;
+                  startLiveTrading();
+                }}
+                className="btn btn-primary"
+              >
+                Go Live
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={stopExecution} className="btn btn-secondary">
+                Stop Live
+              </button>
+              <button onClick={startWatchlist} className="btn btn-tertiary">
+                Watchlist Only
+              </button>
+            </>
+          )}
+        </>
       )}
 
       {isPaperTrading && (

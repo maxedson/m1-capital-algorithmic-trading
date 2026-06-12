@@ -1,19 +1,51 @@
+"use client";
+
 import { SiteShell } from "@/components/site-shell";
 import { CurrentPositionsPanel } from "@/components/current-positions-panel";
 import { ModeToggle } from "@/components/mode-toggle";
 import { StrategySelector } from "@/components/strategy-selector";
 import { TradingControls } from "@/components/trading-controls";
+import { useTrading } from "@/lib/trading-context";
 import {
   currentPositions,
   executionStats,
   missionCards,
-  systemStatus,
   tradeHistory,
   watchlistRows,
   watchlistSummary,
 } from "@/lib/dashboard-data";
 
 export default function TradingPage() {
+  const { scannerState, executionState } = useTrading();
+  const systemStatus = [
+    { label: "Broker", value: "Connected to Schwab", tone: "positive" as const },
+    {
+      label: "Scanner",
+      value: scannerState === "watchlist" ? "Running" : "Stopped",
+      tone: scannerState === "watchlist" ? ("positive" as const) : ("neutral" as const),
+    },
+    {
+      label: "Execution",
+      value:
+        executionState === "live"
+          ? "Live"
+          : executionState === "paper"
+            ? "Paper"
+            : "Off",
+      tone:
+        executionState === "live"
+          ? ("warm" as const)
+          : executionState === "paper"
+            ? ("positive" as const)
+            : ("neutral" as const),
+    },
+    {
+      label: "Risk Guard",
+      value: scannerState === "off" && executionState === "off" ? "Idle" : "Passing",
+      tone: scannerState === "off" && executionState === "off" ? ("neutral" as const) : ("positive" as const),
+    },
+  ];
+
   return (
     <SiteShell eyebrow="Execution">
       <section className="execution-header">
@@ -25,33 +57,21 @@ export default function TradingPage() {
           <div className="controls-group">
             <StrategySelector />
           </div>
-          <div className="controls-group trading-controls-group">
-            <TradingControls />
-          </div>
-        </div>
-
-        <div className="system-health-strip">
-          <div className="system-health-label">
-            <p className="panel-kicker">System Readiness</p>
-            <strong>Operational checks</strong>
-          </div>
-
-          <div className="system-health-grid">
+          <div className="system-health-inline">
             {systemStatus.map((item) => (
-              <div key={item.label} className={`system-health-chip tone-${item.tone}`}>
+              <div key={item.label} className={`system-health-chip compact tone-${item.tone}`}>
                 <span>{item.label}</span>
                 <strong>{item.value}</strong>
               </div>
             ))}
           </div>
+          <div className="controls-group trading-controls-group">
+            <TradingControls />
+          </div>
         </div>
       </section>
 
       <section className="stats-grid">
-        <div className="execution-stats-heading">
-          <p className="panel-kicker">Session Metrics</p>
-        </div>
-
         {executionStats.map((stat) => (
           <article key={stat.label} className="panel stat-panel">
             <span>{stat.label}</span>
@@ -140,22 +160,34 @@ export default function TradingPage() {
             <div className="table-row table-head trade-head">
               <span>Symbol</span>
               <span>Side</span>
-              <span>Status</span>
+              <span>Setup</span>
+              <span>Broker Id</span>
+              <span>Order Id</span>
+              <span>Qty</span>
+              <span>Entry</span>
+              <span>Opened At</span>
+              <span>Exit Price</span>
               <span>Exit</span>
-              <span>R</span>
+              <span>Hold Time</span>
+              <span>Closed At</span>
               <span>P&amp;L</span>
-              <span>Grade</span>
             </div>
 
             {tradeHistory.map((trade) => (
               <div key={trade.symbol} className={`table-row trade-head tone-${trade.tone}`}>
                 <span>{trade.symbol}</span>
                 <span>{trade.side}</span>
-                <span>{trade.status}</span>
+                <span>{trade.setup}</span>
+                <span>{trade.brokerId}</span>
+                <span>{trade.orderId}</span>
+                <span>{trade.quantity}</span>
+                <span>{trade.entry}</span>
+                <span>{trade.openedAt}</span>
+                <span>{trade.exitPrice}</span>
                 <span>{trade.exitReason}</span>
-                <span>{trade.rMultiple}</span>
+                <span>{trade.holdTime}</span>
+                <span>{trade.closedAt}</span>
                 <span>{trade.result}</span>
-                <span className="grade-pill">{trade.grade}</span>
               </div>
             ))}
           </div>

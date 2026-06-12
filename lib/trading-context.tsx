@@ -2,15 +2,20 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-export type TradingMode = "standby" | "live-trading" | "paper-trading" | "backtesting";
+export type ScannerState = "off" | "watchlist";
+export type ExecutionState = "off" | "paper" | "live";
 
 type TradingContextType = {
-  mode: TradingMode;
-  setMode: (mode: TradingMode) => void;
+  scannerState: ScannerState;
+  executionState: ExecutionState;
   isTrading: boolean;
-  setIsTrading: (trading: boolean) => void;
-  activeStrategy: string | null;
-  setActiveStrategy: (strategy: string | null) => void;
+  startWatchlist: () => void;
+  stopWatchlist: () => void;
+  startPaperTrading: () => void;
+  startLiveTrading: () => void;
+  stopExecution: () => void;
+  activeStrategies: string[];
+  setActiveStrategies: (strategies: string[]) => void;
   paperTradingBalance: number;
   setPaperTradingBalance: (balance: number) => void;
   resetPaperTrading: (initialBalance: number) => void;
@@ -19,23 +24,53 @@ type TradingContextType = {
 const TradingContext = createContext<TradingContextType | undefined>(undefined);
 
 export function TradingProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<TradingMode>("standby");
-  const [isTrading, setIsTrading] = useState(false);
-  const [activeStrategy, setActiveStrategy] = useState<string | null>(null);
+  const [scannerState, setScannerState] = useState<ScannerState>("off");
+  const [executionState, setExecutionState] = useState<ExecutionState>("off");
+  const [activeStrategies, setActiveStrategies] = useState<string[]>([]);
   const [paperTradingBalance, setPaperTradingBalance] = useState(100000);
+  const isTrading = executionState !== "off";
+
+  const startWatchlist = () => {
+    setScannerState("watchlist");
+    setExecutionState("off");
+  };
+
+  const stopWatchlist = () => {
+    setExecutionState("off");
+    setScannerState("off");
+  };
+
+  const startPaperTrading = () => {
+    setScannerState("watchlist");
+    setExecutionState("paper");
+  };
+
+  const startLiveTrading = () => {
+    setScannerState("watchlist");
+    setExecutionState("live");
+  };
+
+  const stopExecution = () => {
+    setExecutionState("off");
+  };
 
   const resetPaperTrading = (initialBalance: number = 100000) => {
     setPaperTradingBalance(initialBalance);
-    setIsTrading(false);
+    setExecutionState("off");
+    setScannerState("watchlist");
   };
 
   const value: TradingContextType = {
-    mode,
-    setMode,
+    scannerState,
+    executionState,
     isTrading,
-    setIsTrading,
-    activeStrategy,
-    setActiveStrategy,
+    startWatchlist,
+    stopWatchlist,
+    startPaperTrading,
+    startLiveTrading,
+    stopExecution,
+    activeStrategies,
+    setActiveStrategies,
     paperTradingBalance,
     setPaperTradingBalance,
     resetPaperTrading,

@@ -25,6 +25,15 @@ function formatMinutes(value: number) {
   return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
 }
 
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function orderTone(status: string): Tone {
   if (status === "filled" || status === "monitoring") return "positive";
   if (status === "queued" || status === "submitted") return "warm";
@@ -545,6 +554,8 @@ const recentPeakValue = 154980;
 const drawdownFromPeakPct =
   ((tradingSystemState.snapshot.accountValue - recentPeakValue) / recentPeakValue) * 100;
 const queuedSignals = tradingSystemState.watchlist.filter((candidate) => candidate.status === "queued");
+const inPositionWatchlistCount = tradingSystemState.watchlist.filter((candidate) => candidate.status === "in_position").length;
+const monitoringWatchlistCount = tradingSystemState.watchlist.filter((candidate) => candidate.status === "monitoring").length;
 const positionsNearStop = openPositions.filter((position) => {
   const denominator = Math.abs(position.markPrice - position.stopPrice);
   if (denominator === 0) return true;
@@ -634,7 +645,9 @@ export const executionStats = [
 export const executionSummary = [
   { label: "Open Risk", value: formatCurrency(openRisk), tone: "warm" as const },
   { label: "Near Stop", value: String(positionsNearStop.length), tone: positionsNearStop.length > 0 ? ("warm" as const) : ("neutral" as const) },
+  { label: "In Position", value: String(inPositionWatchlistCount), tone: "positive" as const },
   { label: "Queued Signals", value: String(queuedSignals.length), tone: "warm" as const },
+  { label: "Monitoring", value: String(monitoringWatchlistCount), tone: "neutral" as const },
 ];
 
 export const positionsSummary = executionSummary.slice(0, 2);
@@ -710,19 +723,34 @@ export const watchlistRows = [...tradingSystemState.watchlist]
 
 export const tradeHistory = closedPositions
   .map((position) => {
-    const matchingOrder = tradingSystemState.orders.find(
-      (order) => order.symbol === position.symbol && order.status === "exited",
-    );
+    const matchingOrder = tradingSystemState.orders.find((order) => order.symbol === position.symbol);
+    const holdMinutes = position.closedAt
+      ? Math.max(
+          1,
+          Math.round((new Date(position.closedAt).getTime() - new Date(position.openedAt).getTime()) / 60000),
+        )
+      : null;
 
     return {
       symbol: position.symbol,
       side: position.side === "long" ? "Long" : "Short",
+      setup: position.setup,
+      brokerId: `SCHW-${position.symbol}`,
+      orderId: matchingOrder?.id ?? `ord_${position.symbol.toLowerCase()}`,
+      quantity: position.quantity.toLocaleString("en-US"),
+      entry: formatCurrency(position.entryPrice),
+      openedAt: formatDateTime(position.openedAt),
+      exitPrice: formatCurrency(position.markPrice),
+      closedAt: position.closedAt ? formatDateTime(position.closedAt) : "--",
+      holdTime: holdMinutes == null ? "--" : formatMinutes(holdMinutes),
       result: formatSignedCurrency(position.pnl),
-      status: matchingOrder ? "Closed" : "Archived",
       exitReason: position.exitReason ? position.exitReason.charAt(0).toUpperCase() + position.exitReason.slice(1) : "--",
-      rMultiple: position.rMultiple == null ? "--" : `${position.rMultiple > 0 ? "+" : ""}${position.rMultiple.toFixed(1)}R`,
-      grade: matchingOrder?.grade ?? "--",
-      tone: position.pnl >= 0 ? ("positive" as const) : ("negative" as const),
+      tone:
+        position.pnl > 0
+          ? ("positive" as const)
+          : position.pnl < 0
+            ? ("negative" as const)
+            : ("neutral" as const),
     };
   });
 
@@ -737,21 +765,30 @@ export const dailyTrades = tradingSystemState.orders.map((order) => ({
 
 export const systemStatus = tradingSystemState.checks;
 
+const completedPositionsCount = closedPositions.length;
+const winningClosedPositionsCount = closedPositions.filter((position) => position.pnl > 0).length;
+const sessionWinRatePct = completedPositionsCount === 0
+  ? 0
+  : (winningClosedPositionsCount / completedPositionsCount) * 100;
+const averageClosedTradePnl = completedPositionsCount === 0
+  ? 0
+  : closedPositions.reduce((sum, position) => sum + position.pnl, 0) / completedPositionsCount;
+
 export const missionCards = [
   {
-    label: "Signals Today",
-    value: String(tradingSystemState.session.signalsToday),
-    progress: `${Math.min(100, Math.round((tradingSystemState.session.signalsToday / 20) * 100))}%`,
+    label: "Completed Positions",
+    value: String(completedPositionsCount),
+    progress: `${Math.min(100, completedPositionsCount * 20)}%`,
   },
   {
-    label: "Execution Accuracy",
-    value: `${tradingSystemState.session.executionAccuracyPct}%`,
-    progress: `${tradingSystemState.session.executionAccuracyPct}%`,
+    label: "Win Rate",
+    value: `${Math.round(sessionWinRatePct)}%`,
+    progress: `${Math.round(sessionWinRatePct)}%`,
   },
   {
-    label: "Best Trade",
-    value: formatPercent(tradingSystemState.session.bestTradePct),
-    progress: `${Math.min(100, Math.round(tradingSystemState.session.bestTradePct * 10))}%`,
+    label: "Avg Trade P&L",
+    value: formatSignedCurrency(averageClosedTradePnl),
+    progress: `${Math.min(100, Math.round(Math.abs(averageClosedTradePnl) / 10))}%`,
   },
   {
     label: "Avg Hold Time",

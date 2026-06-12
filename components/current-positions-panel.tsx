@@ -40,11 +40,10 @@ export function CurrentPositionsPanel({ initialPositions }: Props) {
 
   const summary = useMemo(() => {
     const openRisk = positions.reduce((sum, position) => sum + position.riskAmount, 0);
-    const nearStop = positions.filter((position) => position.isNearStop).length;
 
     return [
+      { label: "Open Positions", value: String(positions.length), tone: "neutral" as const },
       { label: "Open Risk", value: formatCurrency(openRisk), tone: "warm" as const },
-      { label: "Near Stop", value: String(nearStop), tone: nearStop > 0 ? ("warm" as const) : ("neutral" as const) },
     ];
   }, [positions]);
 
