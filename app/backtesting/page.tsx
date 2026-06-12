@@ -1,20 +1,28 @@
 import { SiteShell } from "@/components/site-shell";
+import { StrategySelector } from "@/components/strategy-selector";
 import { backtestRuns, modelBadges, simulationMetrics } from "@/lib/dashboard-data";
 
 export default function BacktestingPage() {
   return (
-    <SiteShell
-      eyebrow="Research"
-      title="Simulation lab and promotion queue."
-      description="This is where strategies earn the right to go live. The UI should feel competitive: compare models, score them, and keep bad assumptions exposed."
-      aside={
-        <div className="hero-score">
-          <span>Promote Queue</span>
-          <strong>1</strong>
-          <small>Momentum Basket v1</small>
+    <SiteShell eyebrow="Backtesting">
+      <section className="dashboard-controls">
+        <div className="controls-group">
+          <StrategySelector />
         </div>
-      }
-    >
+        <div className="controls-group">
+          <label htmlFor="date-range" className="control-label">Date Range</label>
+          <input
+            id="date-range"
+            type="text"
+            placeholder="Last 6 months"
+            className="select-input"
+          />
+        </div>
+        <button className="btn btn-primary" style={{ marginLeft: "auto" }}>
+          Run Backtest
+        </button>
+      </section>
+
       <section className="stats-grid">
         {simulationMetrics.map((stat) => (
           <article key={stat.label} className="panel stat-panel">

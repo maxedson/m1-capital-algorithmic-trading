@@ -34,8 +34,29 @@ export type Position = {
   quantity: number;
   entryPrice: number;
   markPrice: number;
+  stopPrice: number;
+  targetPrice: number;
+  weightPct: number;
+  riskAmount: number;
+  openedAt: string;
+  setup: string;
   pnl: number;
   status: "open" | "closed";
+  exitReason?: "target" | "stop" | "trail" | "manual";
+  closedAt?: string;
+  rMultiple?: number;
+};
+
+export type WatchlistCandidate = {
+  symbol: string;
+  setup: string;
+  signal: "ready" | "armed" | "waiting";
+  score: number;
+  price: number;
+  changePct: number;
+  signalAgeMinutes: number;
+  inPosition: boolean;
+  blockedReason?: "awaiting confirmation" | "risk full" | "cooldown" | "spread too wide";
 };
 
 export type Order = {
@@ -81,6 +102,12 @@ export type TradingSession = {
   bestTradePct: number;
   worstTradePct: number;
   averageHoldMinutes: number;
+  winRatePct: number;
+  averageWinner: number;
+  averageLoser: number;
+  expectancyPerTrade: number;
+  topSetupToday: string;
+  topSetupHitRatePct: number;
 };
 
 export type TradingSystemState = {
@@ -88,6 +115,7 @@ export type TradingSystemState = {
   equityCurve: EquityPoint[];
   session: TradingSession;
   positions: Position[];
+  watchlist: WatchlistCandidate[];
   orders: Order[];
   checks: SystemCheck[];
   backtestConfig: BacktestConfig;

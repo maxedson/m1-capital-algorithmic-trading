@@ -1,29 +1,27 @@
 import Link from "next/link";
 import { SiteShell } from "@/components/site-shell";
+import { DashboardViewToggle } from "@/components/dashboard-view-toggle";
 import {
   commandStats,
+  dashboardSummary,
+  equityBars,
   focusCards,
   heatTiles,
   performanceBreakdown,
   performanceStats,
   streakStats,
-  tradingSystemState,
 } from "@/lib/dashboard-data";
 
 export default function Home() {
   return (
-    <SiteShell
-      eyebrow="Dashboard"
-      title="Your personal trading console."
-      description="One page for the current state of the system and the capital curve behind it. Execution and research stay separate, but performance belongs on the main dashboard."
-      aside={
-        <div className="hero-score">
-          <span>Session Rank</span>
-          <strong>S+</strong>
-          <small>7 green days in a row</small>
+    <SiteShell eyebrow="Dashboard">
+      <section className="dashboard-controls">
+        <div className="controls-group">
+          <label htmlFor="mode-select" className="control-label">Results</label>
+          <DashboardViewToggle />
         </div>
-      }
-    >
+      </section>
+
       <section className="stats-grid">
         {commandStats.map((stat) => (
           <article key={stat.label} className={`panel stat-panel tone-${stat.tone}`}>
@@ -46,17 +44,57 @@ export default function Home() {
         <article className="panel">
           <div className="section-heading">
             <div>
+              <p className="panel-kicker">Balance Sheet</p>
+              <h2>Portfolio structure</h2>
+            </div>
+          </div>
+
+          <div className="mini-grid">
+            {dashboardSummary.map((item) => (
+              <div key={item.label} className={`metric-chip tone-${item.tone}`}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="section-heading">
+            <div>
+              <p className="panel-kicker">Edge Quality</p>
+              <h2>Edge quality</h2>
+            </div>
+          </div>
+
+          <div className="bullet-stack">
+            {streakStats.map((item) => (
+              <div key={item.label} className="mini-stat">
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+                <small>{item.detail}</small>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="content-grid two-up">
+        <article className="panel">
+          <div className="section-heading">
+            <div>
               <p className="panel-kicker">Equity Arc</p>
-              <h2>Weekly climb</h2>
+              <h2>Cumulative equity</h2>
             </div>
           </div>
 
           <div className="chart-bars" aria-label="Equity curve chart">
-            {tradingSystemState.equityCurve.map((point) => (
+            {equityBars.map((point) => (
               <div key={point.label} className="bar-group">
                 <div className="bar-track">
-                  <div className="bar-fill" style={{ height: `${point.pctOfPeak}%` }} />
+                  <div className="bar-fill" style={{ height: `${point.heightPct}%` }} />
                 </div>
+                <strong>{point.value}</strong>
                 <span>{point.label}</span>
               </div>
             ))}
@@ -96,25 +134,6 @@ export default function Home() {
               <div key={item.label} className="metric-chip">
                 <span>{item.label}</span>
                 <strong>{item.value}</strong>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel">
-          <div className="section-heading">
-            <div>
-              <p className="panel-kicker">Streaks</p>
-              <h2>Behavior loop</h2>
-            </div>
-          </div>
-
-          <div className="bullet-stack">
-            {streakStats.map((item) => (
-              <div key={item.label} className="mini-stat">
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-                <small>{item.detail}</small>
               </div>
             ))}
           </div>

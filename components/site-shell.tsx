@@ -3,23 +3,33 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import { useTrading } from "@/lib/trading-context";
 
 const navigation = [
   { href: "/", label: "Dashboard" },
   { href: "/trading", label: "Execution" },
-  { href: "/backtesting", label: "Research" },
+  { href: "/backtesting", label: "Backtesting" },
 ];
 
 type SiteShellProps = {
   eyebrow: string;
-  title: string;
-  description: string;
   aside?: ReactNode;
   children: ReactNode;
 };
 
-export function SiteShell({ eyebrow, title, description, aside, children }: SiteShellProps) {
+function getModeLabel(mode: string, isTrading: boolean): string {
+  if (!isTrading || mode === "standby") return "Standby";
+  if (mode === "live-trading") return "Live Trading";
+  if (mode === "paper-trading") return "Paper Trading";
+  if (mode === "backtesting") return "Backtesting";
+  return "Standby";
+}
+
+export function SiteShell({ eyebrow, aside, children }: SiteShellProps) {
   const pathname = usePathname();
+  const { mode, isTrading } = useTrading();
+  const modeLabel = getModeLabel(mode, isTrading);
+  const isStandby = !isTrading || mode === "standby";
 
   return (
     <main className="page-shell">
@@ -50,12 +60,6 @@ export function SiteShell({ eyebrow, title, description, aside, children }: Site
                 );
               })}
             </nav>
-
-            <div className="sidebar-card">
-              <span className="sidebar-label">Mode</span>
-              <strong>Live Operator View</strong>
-              <small>Focus on system quality, execution discipline, and capital velocity.</small>
-            </div>
           </div>
         </aside>
 
@@ -66,20 +70,15 @@ export function SiteShell({ eyebrow, title, description, aside, children }: Site
               <strong>Personal trading workspace</strong>
             </div>
 
-            <div className="topbar-status">
-              <span className="status-dot" />
-              <span>System online</span>
+            <div className={`topbar-status${isStandby ? " standby" : ""}`}>
+              <span className="status-wave" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
+              <span>{modeLabel}</span>
             </div>
           </header>
-
-          <section className="hero-block hero-grid">
-            <div>
-              <p className="eyebrow">{eyebrow}</p>
-              <h1>{title}</h1>
-              <p className="hero-copy">{description}</p>
-            </div>
-            {aside ? <div className="hero-aside">{aside}</div> : null}
-          </section>
 
           {children}
         </section>
