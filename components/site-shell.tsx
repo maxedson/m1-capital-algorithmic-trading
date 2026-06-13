@@ -21,7 +21,7 @@ function getModeLabel(scannerState: string, executionState: string): string {
   if (executionState === "live") return "Live Trading";
   if (executionState === "paper") return "Paper Trading";
   if (scannerState === "watchlist") return "Watchlist Only";
-  return "Standby";
+  return "Off";
 }
 
 export function SiteShell({ eyebrow, aside, children }: SiteShellProps) {

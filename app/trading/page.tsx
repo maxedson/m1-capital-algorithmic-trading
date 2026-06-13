@@ -2,9 +2,10 @@
 
 import { SiteShell } from "@/components/site-shell";
 import { CurrentPositionsPanel } from "@/components/current-positions-panel";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ExecutionToggle, SystemToggle } from "@/components/mode-toggle";
 import { StrategySelector } from "@/components/strategy-selector";
 import { TradingControls } from "@/components/trading-controls";
+import { WatchlistSelector } from "@/components/watchlist-selector";
 import { useTrading } from "@/lib/trading-context";
 import {
   currentPositions,
@@ -16,7 +17,7 @@ import {
 } from "@/lib/dashboard-data";
 
 export default function TradingPage() {
-  const { scannerState, executionState } = useTrading();
+  const { scannerState, executionState, selectedSystemState, selectedExecutionState } = useTrading();
   const systemStatus = [
     { label: "Broker", value: "Connected to Schwab", tone: "positive" as const },
     {
@@ -48,27 +49,38 @@ export default function TradingPage() {
 
   return (
     <SiteShell eyebrow="Execution">
-      <section className="execution-header">
-        <div className="execution-controls">
-          <div className="controls-group">
-            <label htmlFor="mode-select" className="control-label">Mode</label>
-            <ModeToggle />
-          </div>
-          <div className="controls-group">
-            <StrategySelector />
-          </div>
-          <div className="system-health-inline">
-            {systemStatus.map((item) => (
-              <div key={item.label} className={`system-health-chip compact tone-${item.tone}`}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </div>
-            ))}
-          </div>
-          <div className="controls-group trading-controls-group">
-            <TradingControls />
-          </div>
+      <section className="dashboard-controls">
+        <div className="controls-group">
+          <SystemToggle />
         </div>
+        {selectedSystemState === "watchlist" ? (
+          <div className="controls-group">
+            <div className="stacked-control">
+              <label className="control-label" htmlFor="watchlist-select">Watchlist Criteria</label>
+              <WatchlistSelector />
+            </div>
+          </div>
+        ) : null}
+        <div className="controls-group">
+          <ExecutionToggle />
+        </div>
+        {selectedExecutionState !== "off" ? (
+          <div className="controls-group">
+            <div className="stacked-control">
+              <label className="control-label" htmlFor="strategy-select">Execution Strategy</label>
+              <StrategySelector />
+            </div>
+          </div>
+        ) : null}
+        <div className="system-health-inline">
+          {systemStatus.map((item) => (
+            <div key={item.label} className={`system-health-chip compact tone-${item.tone}`}>
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </div>
+          ))}
+        </div>
+        <TradingControls />
       </section>
 
       <section className="stats-grid">

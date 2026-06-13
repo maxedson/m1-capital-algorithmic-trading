@@ -6,106 +6,146 @@ export function TradingControls() {
   const {
     scannerState,
     executionState,
-    stopWatchlist,
+    selectedSystemState,
+    selectedExecutionState,
     startWatchlist,
+    stopWatchlist,
     startPaperTrading,
     startLiveTrading,
     stopExecution,
-    resetPaperTrading,
     activeStrategies,
+    resetPaperTrading,
   } = useTrading();
 
+  const isWatchlistActive = scannerState === "watchlist";
   const isPaperTrading = executionState === "paper";
-  const isScannerOff = scannerState === "off";
+  const isLiveTrading = executionState === "live";
+  const hasExecutionStrategy = activeStrategies.length > 0;
 
-  const ensureStrategiesSelected = () => {
-    if (activeStrategies.length === 0) {
-      alert("Please select at least one strategy first");
-      return false;
+  const handleStart = () => {
+    if (!isWatchlistActive && selectedSystemState === "watchlist") {
+      startWatchlist();
+      return;
     }
-    return true;
+
+    if (selectedExecutionState === "paper") {
+      if (!hasExecutionStrategy) return;
+      startPaperTrading();
+      return;
+    }
+
+    if (selectedExecutionState === "live") {
+      if (!hasExecutionStrategy) return;
+      const confirmed = confirm(
+        "Start live trading? Orders will be sent to your broker account."
+      );
+
+      if (confirmed) {
+        startLiveTrading();
+      }
+    }
   };
 
   const handleResetPaper = () => {
     const confirmed = confirm(
       "Reset paper trading? This will clear all positions and reset balance to $100,000."
     );
+
     if (confirmed) {
       resetPaperTrading(100000);
     }
   };
 
-  return (
-    <div className="trading-controls">
-      {isScannerOff ? (
-        <button
-          onClick={() => {
-            if (!ensureStrategiesSelected()) return;
-            startWatchlist();
-          }}
-          className="btn btn-primary"
-        >
-          Start Watchlist
-        </button>
-      ) : (
-        <>
-          {executionState === "off" ? (
-            <>
-              <button onClick={stopWatchlist} className="btn btn-secondary">
-                Stop Watchlist
-              </button>
-              <button
-                onClick={() => {
-                  if (!ensureStrategiesSelected()) return;
-                  startPaperTrading();
-                }}
-                className="btn btn-primary"
-              >
-                Start Paper
-              </button>
-              <button
-                onClick={() => {
-                  if (!ensureStrategiesSelected()) return;
-                  startLiveTrading();
-                }}
-                className="btn btn-secondary"
-              >
-                Start Live
-              </button>
-            </>
-          ) : executionState === "paper" ? (
-            <>
-              <button onClick={stopExecution} className="btn btn-secondary">
-                Stop Paper
-              </button>
-              <button
-                onClick={() => {
-                  if (!ensureStrategiesSelected()) return;
-                  startLiveTrading();
-                }}
-                className="btn btn-primary"
-              >
-                Go Live
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={stopExecution} className="btn btn-secondary">
-                Stop Live
-              </button>
-              <button onClick={startWatchlist} className="btn btn-tertiary">
-                Watchlist Only
-              </button>
-            </>
-          )}
-        </>
-      )}
+  if (isPaperTrading) {
+    return (
+      <div className="trading-controls-shell">
+        <div className="trading-controls">
+          <button onClick={stopExecution} className="btn btn-tertiary">
+            Stop Paper Trading
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-      {isPaperTrading && (
-        <button onClick={handleResetPaper} className="btn btn-tertiary">
-          Reset Paper Trading
-        </button>
-      )}
-    </div>
-  );
+  if (isLiveTrading) {
+    return (
+      <div className="trading-controls-shell">
+        <div className="trading-controls">
+          <button onClick={stopExecution} className="btn btn-tertiary">
+            Stop Live Trading
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isWatchlistActive && selectedExecutionState === "paper") {
+    if (!hasExecutionStrategy) {
+      return (
+        <div className="trading-controls-shell">
+          <div className="trading-controls">
+            <button onClick={handleResetPaper} className="btn btn-tertiary">
+              Reset Paper Trading
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="trading-controls-shell">
+        <div className="trading-controls">
+          <button onClick={handleStart} className="btn btn-primary">
+            Start Paper Trading
+          </button>
+          <button onClick={handleResetPaper} className="btn btn-tertiary">
+            Reset Paper Trading
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isWatchlistActive && selectedExecutionState === "live") {
+    if (!hasExecutionStrategy) {
+      return null;
+    }
+
+    return (
+      <div className="trading-controls-shell">
+        <div className="trading-controls">
+          <button onClick={handleStart} className="btn btn-primary">
+            Start Live Trading
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isWatchlistActive) {
+    return (
+      <div className="trading-controls-shell">
+        <div className="trading-controls">
+          <button onClick={stopWatchlist} className="btn btn-tertiary">
+            Stop Watchlist
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedSystemState === "watchlist") {
+    return (
+      <div className="trading-controls-shell">
+        <div className="trading-controls">
+          <button onClick={handleStart} className="btn btn-primary">
+            Start Watchlist
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }

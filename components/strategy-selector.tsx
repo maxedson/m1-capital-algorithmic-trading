@@ -37,7 +37,6 @@ export function StrategySelector() {
 
   return (
     <div className="strategy-selector" ref={containerRef}>
-      <label htmlFor="strategy-select" className="control-label">Strategy</label>
       <button
         id="strategy-select"
         type="button"

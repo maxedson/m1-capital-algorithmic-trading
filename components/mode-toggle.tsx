@@ -2,44 +2,89 @@
 
 import { useTrading } from "@/lib/trading-context";
 
-export function ModeToggle() {
-  const { scannerState, executionState, startWatchlist, stopWatchlist, startPaperTrading, startLiveTrading } = useTrading();
-
-  const isWatchlistOnly = scannerState === "watchlist" && executionState === "off";
-  const isPaperTrading = executionState === "paper";
-  const isLiveTrading = executionState === "live";
-  const isStandby = scannerState === "off" && executionState === "off";
+export function SystemToggle() {
+  const {
+    scannerState,
+    selectedSystemState,
+    selectSystemState,
+  } = useTrading();
+  const isWatchlistInitialized = scannerState === "watchlist";
+  const isSystemLocked = isWatchlistInitialized;
 
   return (
-    <div className="mode-toggle">
-      <button
-        onClick={stopWatchlist}
-        className={`mode-button ${isStandby ? "active" : ""}`}
-        aria-pressed={isStandby}
-      >
-        Standby
-      </button>
-      <button
-        onClick={startWatchlist}
-        className={`mode-button ${isWatchlistOnly ? "active" : ""}`}
-        aria-pressed={isWatchlistOnly}
-      >
-        Watchlist
-      </button>
-      <button
-        onClick={startPaperTrading}
-        className={`mode-button ${isPaperTrading ? "active" : ""}`}
-        aria-pressed={isPaperTrading}
-      >
-        Paper Trading
-      </button>
-      <button
-        onClick={startLiveTrading}
-        className={`mode-button ${isLiveTrading ? "active" : ""}`}
-        aria-pressed={isLiveTrading}
-      >
-        Live Trading
-      </button>
+    <div className="mode-control">
+      <span className="control-label">System</span>
+      <div className="mode-toggle">
+        <button
+          onClick={() => selectSystemState("off")}
+          className={`mode-button ${selectedSystemState === "off" ? "active" : ""}`}
+          aria-pressed={selectedSystemState === "off"}
+          disabled={isSystemLocked}
+        >
+          Off
+        </button>
+        <button
+          onClick={() => selectSystemState("watchlist")}
+          className={`mode-button ${selectedSystemState === "watchlist" ? "active" : ""}`}
+          aria-pressed={selectedSystemState === "watchlist"}
+          disabled={isSystemLocked}
+        >
+          Watchlist Ready
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function ExecutionToggle() {
+  const {
+    scannerState,
+    executionState,
+    selectedExecutionState,
+    selectExecutionState,
+  } = useTrading();
+  const isWatchlistInitialized = scannerState === "watchlist";
+  const isExecutionActive = executionState !== "off";
+  const isExecutionLocked = isExecutionActive;
+
+  return (
+    <div className="mode-control">
+      <span className="control-label">Execution</span>
+      <div className="mode-toggle">
+        <button
+          onClick={() => selectExecutionState("off")}
+          className={`mode-button ${selectedExecutionState === "off" ? "active" : ""}`}
+          aria-pressed={selectedExecutionState === "off"}
+          disabled={!isWatchlistInitialized || isExecutionLocked}
+        >
+          Off
+        </button>
+        <button
+          onClick={() => selectExecutionState("paper")}
+          className={`mode-button ${selectedExecutionState === "paper" ? "active" : ""}`}
+          aria-pressed={selectedExecutionState === "paper"}
+          disabled={!isWatchlistInitialized || isExecutionLocked}
+        >
+          Paper Trading
+        </button>
+        <button
+          onClick={() => selectExecutionState("live")}
+          className={`mode-button ${selectedExecutionState === "live" ? "active" : ""}`}
+          aria-pressed={selectedExecutionState === "live"}
+          disabled={!isWatchlistInitialized || isExecutionLocked}
+        >
+          Live Trading
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function ModeToggle() {
+  return (
+    <div className="execution-mode-grid">
+      <SystemToggle />
+      <ExecutionToggle />
     </div>
   );
 }
