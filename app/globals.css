@@ -1048,6 +1048,19 @@ p {
   grid-template-columns: 0.8fr 0.55fr 1.45fr 1fr 1fr 0.8fr 0.75fr 1.35fr;
 }
 
+.broker-quote-head {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.broker-quote-table {
+  margin-top: 20px;
+}
+
+.broker-error-copy {
+  color: var(--warm);
+  margin-top: 12px;
+}
+
 .watchlist-table-scroll {
   max-height: 560px;
   overflow-y: auto;

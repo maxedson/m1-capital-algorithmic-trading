@@ -7,6 +7,7 @@ const envSchema = z.object({
   SCHWAB_AUTH_BASE_URL: z.string().url().optional(),
   SCHWAB_TOKEN_URL: z.string().url().optional(),
   SCHWAB_API_BASE_URL: z.string().url().optional(),
+  APP_SESSION_SECRET: z.string().min(32).optional(),
 });
 
 export const env = envSchema.parse({
@@ -16,4 +17,5 @@ export const env = envSchema.parse({
   SCHWAB_AUTH_BASE_URL: process.env.SCHWAB_AUTH_BASE_URL,
   SCHWAB_TOKEN_URL: process.env.SCHWAB_TOKEN_URL,
   SCHWAB_API_BASE_URL: process.env.SCHWAB_API_BASE_URL,
+  APP_SESSION_SECRET: process.env.APP_SESSION_SECRET,
 });

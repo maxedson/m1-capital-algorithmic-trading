@@ -1,8 +1,10 @@
 "use client";
 
+import { startTransition, useEffect, useState } from "react";
 import { SiteShell } from "@/components/site-shell";
 import { CurrentPositionsPanel } from "@/components/current-positions-panel";
 import { ExecutionToggle, SystemToggle } from "@/components/mode-toggle";
+import { SchwabConnectionPanel } from "@/components/schwab-connection-panel";
 import { StrategySelector } from "@/components/strategy-selector";
 import { TradingControls } from "@/components/trading-controls";
 import { WatchlistSelector } from "@/components/watchlist-selector";
@@ -16,10 +18,44 @@ import {
   watchlistSummary,
 } from "@/lib/dashboard-data";
 
+type SchwabSessionStatus = {
+  connected: boolean;
+  expiresAt: number | null;
+  scope: string | null;
+};
+
 export default function TradingPage() {
   const { scannerState, executionState, selectedSystemState, selectedExecutionState } = useTrading();
+  const [brokerStatus, setBrokerStatus] = useState<SchwabSessionStatus | null>(null);
+  const [isBrokerStatusLoading, setIsBrokerStatusLoading] = useState(true);
+
+  useEffect(() => {
+    const loadBrokerStatus = async () => {
+      try {
+        setIsBrokerStatusLoading(true);
+        const response = await fetch("/api/schwab/session", { cache: "no-store" });
+        const payload = (await response.json()) as SchwabSessionStatus;
+        setBrokerStatus(payload);
+      } finally {
+        setIsBrokerStatusLoading(false);
+      }
+    };
+
+    startTransition(() => {
+      void loadBrokerStatus();
+    });
+  }, []);
+
   const systemStatus = [
-    { label: "Broker", value: "Connected to Schwab", tone: "positive" as const },
+    {
+      label: "Broker",
+      value: isBrokerStatusLoading ? "Checking" : brokerStatus?.connected ? "Connected" : "Not Connected",
+      tone: isBrokerStatusLoading
+        ? ("neutral" as const)
+        : brokerStatus?.connected
+          ? ("positive" as const)
+          : ("warm" as const),
+    },
     {
       label: "Scanner",
       value: scannerState === "watchlist" ? "Running" : "Stopped",
@@ -80,6 +116,13 @@ export default function TradingPage() {
             </div>
           ))}
         </div>
+        {!isBrokerStatusLoading && !brokerStatus?.connected ? (
+          <div className="controls-group trading-controls-group">
+            <a href="/api/schwab/auth/login" className="btn btn-primary">
+              Connect Schwab
+            </a>
+          </div>
+        ) : null}
         <TradingControls />
       </section>
 
@@ -90,6 +133,10 @@ export default function TradingPage() {
             <strong>{stat.value}</strong>
           </article>
         ))}
+      </section>
+
+      <section className="content-grid">
+        <SchwabConnectionPanel />
       </section>
 
       <section className="session-metrics-strip">
