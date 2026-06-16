@@ -68,12 +68,13 @@ export function ExecutionToggle() {
           Paper Trading
         </button>
         <button
-          onClick={() => selectExecutionState("live")}
-          className={`mode-button ${selectedExecutionState === "live" ? "active" : ""}`}
-          aria-pressed={selectedExecutionState === "live"}
-          disabled={!isWatchlistInitialized || isExecutionLocked}
+          type="button"
+          className="mode-button disabled-live-mode"
+          aria-disabled="true"
+          disabled
+          title="Live trading is disabled until Schwab Accounts and Trading is explicitly enabled."
         >
-          Live Trading
+          Live Trading Disabled
         </button>
       </div>
     </div>

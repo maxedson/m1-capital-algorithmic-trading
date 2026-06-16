@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import { defaultWatchlistId } from "@/lib/watchlists";
 
 export type ScannerState = "off" | "watchlist";
-export type ExecutionState = "off" | "paper" | "live";
+export type ExecutionState = "off" | "paper";
 export type SystemSelection = "off" | "watchlist";
 
 type TradingContextType = {
@@ -18,7 +18,6 @@ type TradingContextType = {
   startWatchlist: () => void;
   stopWatchlist: () => void;
   startPaperTrading: () => void;
-  startLiveTrading: () => void;
   stopExecution: () => void;
   activeStrategies: string[];
   setActiveStrategies: (strategies: string[]) => void;
@@ -73,13 +72,6 @@ export function TradingProvider({ children }: { children: ReactNode }) {
     setSelectedExecutionState("paper");
   };
 
-  const startLiveTrading = () => {
-    setScannerState("watchlist");
-    setExecutionState("live");
-    setSelectedSystemState("watchlist");
-    setSelectedExecutionState("live");
-  };
-
   const stopExecution = () => {
     setExecutionState("off");
     setSelectedSystemState("watchlist");
@@ -105,7 +97,6 @@ export function TradingProvider({ children }: { children: ReactNode }) {
     startWatchlist,
     stopWatchlist,
     startPaperTrading,
-    startLiveTrading,
     stopExecution,
     activeStrategies,
     setActiveStrategies,

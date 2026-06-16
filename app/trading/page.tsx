@@ -4,7 +4,6 @@ import { startTransition, useEffect, useState } from "react";
 import { SiteShell } from "@/components/site-shell";
 import { CurrentPositionsPanel } from "@/components/current-positions-panel";
 import { ExecutionToggle, SystemToggle } from "@/components/mode-toggle";
-import { SchwabConnectionPanel } from "@/components/schwab-connection-panel";
 import { StrategySelector } from "@/components/strategy-selector";
 import { TradingControls } from "@/components/trading-controls";
 import { WatchlistSelector } from "@/components/watchlist-selector";
@@ -24,26 +23,74 @@ type SchwabSessionStatus = {
   scope: string | null;
 };
 
+const defaultQuoteSymbols = ["AAPL", "MSFT", "NVDA", "SPY"];
+
 export default function TradingPage() {
   const { scannerState, executionState, selectedSystemState, selectedExecutionState } = useTrading();
   const [brokerStatus, setBrokerStatus] = useState<SchwabSessionStatus | null>(null);
   const [isBrokerStatusLoading, setIsBrokerStatusLoading] = useState(true);
+  const [quoteFeedLabel, setQuoteFeedLabel] = useState("Idle");
+  const [quoteFeedTone, setQuoteFeedTone] = useState<"positive" | "neutral" | "warm">("neutral");
 
   useEffect(() => {
-    const loadBrokerStatus = async () => {
+    const loadBrokerStatus = async (showLoading = false) => {
       try {
-        setIsBrokerStatusLoading(true);
+        if (showLoading) {
+          setIsBrokerStatusLoading(true);
+        }
+
         const response = await fetch("/api/schwab/session", { cache: "no-store" });
         const payload = (await response.json()) as SchwabSessionStatus;
         setBrokerStatus(payload);
+
+        if (!payload.connected) {
+          setQuoteFeedLabel("Idle");
+          setQuoteFeedTone("neutral");
+          return;
+        }
+
+        const quotesResponse = await fetch(`/api/schwab/quotes?symbols=${defaultQuoteSymbols.join(",")}`, {
+          cache: "no-store",
+        });
+        const quotePayload = (await quotesResponse.json()) as {
+          quotes?: Record<string, unknown>;
+          error?: string;
+        };
+
+        if (!quotesResponse.ok || !quotePayload.quotes) {
+          setQuoteFeedLabel("Unavailable");
+          setQuoteFeedTone("warm");
+          return;
+        }
+
+        const quoteCount = Object.keys(quotePayload.quotes).length;
+        setQuoteFeedLabel(quoteCount > 0 ? `${quoteCount} Live` : "Idle");
+        setQuoteFeedTone(quoteCount > 0 ? "positive" : "neutral");
       } finally {
         setIsBrokerStatusLoading(false);
       }
     };
 
     startTransition(() => {
-      void loadBrokerStatus();
+      void loadBrokerStatus(true);
     });
+
+    const pollInterval = window.setInterval(() => {
+      void loadBrokerStatus();
+    }, 30000);
+
+    const refreshOnFocus = () => {
+      void loadBrokerStatus();
+    };
+
+    window.addEventListener("focus", refreshOnFocus);
+    document.addEventListener("visibilitychange", refreshOnFocus);
+
+    return () => {
+      window.clearInterval(pollInterval);
+      window.removeEventListener("focus", refreshOnFocus);
+      document.removeEventListener("visibilitychange", refreshOnFocus);
+    };
   }, []);
 
   const systemStatus = [
@@ -63,18 +110,11 @@ export default function TradingPage() {
     },
     {
       label: "Execution",
-      value:
-        executionState === "live"
-          ? "Live"
-          : executionState === "paper"
-            ? "Paper"
-            : "Off",
+      value: executionState === "paper" ? "Paper" : "Off",
       tone:
-        executionState === "live"
-          ? ("warm" as const)
-          : executionState === "paper"
-            ? ("positive" as const)
-            : ("neutral" as const),
+        executionState === "paper"
+          ? ("positive" as const)
+          : ("neutral" as const),
     },
     {
       label: "Risk Guard",
@@ -82,6 +122,12 @@ export default function TradingPage() {
       tone: scannerState === "off" && executionState === "off" ? ("neutral" as const) : ("positive" as const),
     },
   ];
+
+  const showConnectButton = !isBrokerStatusLoading && !brokerStatus?.connected;
+  const showDisconnectButton =
+    !isBrokerStatusLoading &&
+    brokerStatus?.connected &&
+    executionState === "off";
 
   return (
     <SiteShell eyebrow="Execution">
@@ -116,13 +162,27 @@ export default function TradingPage() {
             </div>
           ))}
         </div>
-        {!isBrokerStatusLoading && !brokerStatus?.connected ? (
-          <div className="controls-group trading-controls-group">
+        <div className="controls-group trading-controls-group">
+          {showConnectButton ? (
             <a href="/api/schwab/auth/login" className="btn btn-primary">
               Connect Schwab
             </a>
-          </div>
-        ) : null}
+          ) : null}
+          {showDisconnectButton ? (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={async () => {
+                await fetch("/api/schwab/session", { method: "DELETE" });
+                setBrokerStatus({ connected: false, expiresAt: null, scope: null });
+                setQuoteFeedLabel("Idle");
+                setQuoteFeedTone("neutral");
+              }}
+            >
+              Disconnect
+            </button>
+          ) : null}
+        </div>
         <TradingControls />
       </section>
 
@@ -133,10 +193,6 @@ export default function TradingPage() {
             <strong>{stat.value}</strong>
           </article>
         ))}
-      </section>
-
-      <section className="content-grid">
-        <SchwabConnectionPanel />
       </section>
 
       <section className="session-metrics-strip">

@@ -11,7 +11,6 @@ export function TradingControls() {
     startWatchlist,
     stopWatchlist,
     startPaperTrading,
-    startLiveTrading,
     stopExecution,
     activeStrategies,
     resetPaperTrading,
@@ -19,7 +18,6 @@ export function TradingControls() {
 
   const isWatchlistActive = scannerState === "watchlist";
   const isPaperTrading = executionState === "paper";
-  const isLiveTrading = executionState === "live";
   const hasExecutionStrategy = activeStrategies.length > 0;
 
   const handleStart = () => {
@@ -34,16 +32,6 @@ export function TradingControls() {
       return;
     }
 
-    if (selectedExecutionState === "live") {
-      if (!hasExecutionStrategy) return;
-      const confirmed = confirm(
-        "Start live trading? Orders will be sent to your broker account."
-      );
-
-      if (confirmed) {
-        startLiveTrading();
-      }
-    }
   };
 
   const handleResetPaper = () => {
@@ -62,18 +50,6 @@ export function TradingControls() {
         <div className="trading-controls">
           <button onClick={stopExecution} className="btn btn-tertiary">
             Stop Paper Trading
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLiveTrading) {
-    return (
-      <div className="trading-controls-shell">
-        <div className="trading-controls">
-          <button onClick={stopExecution} className="btn btn-tertiary">
-            Stop Live Trading
           </button>
         </div>
       </div>
@@ -101,22 +77,6 @@ export function TradingControls() {
           </button>
           <button onClick={handleResetPaper} className="btn btn-tertiary">
             Reset Paper Trading
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (isWatchlistActive && selectedExecutionState === "live") {
-    if (!hasExecutionStrategy) {
-      return null;
-    }
-
-    return (
-      <div className="trading-controls-shell">
-        <div className="trading-controls">
-          <button onClick={handleStart} className="btn btn-primary">
-            Start Live Trading
           </button>
         </div>
       </div>

@@ -427,6 +427,11 @@ p {
   cursor: not-allowed;
 }
 
+.disabled-live-mode {
+  border: 1px dashed rgba(255, 178, 77, 0.28);
+  color: var(--warm);
+}
+
 .brand-lockup {
   display: inline-flex;
   align-items: center;
@@ -1050,15 +1055,6 @@ p {
 
 .broker-quote-head {
   grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-
-.broker-quote-table {
-  margin-top: 20px;
-}
-
-.broker-error-copy {
-  color: var(--warm);
-  margin-top: 12px;
 }
 
 .watchlist-table-scroll {
