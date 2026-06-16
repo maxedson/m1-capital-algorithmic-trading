@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:https": "next dev -H 127.0.0.1 -p 3443 --experimental-https",
+    "dev:https:trusted": "next dev -H 127.0.0.1 -p 3443 --experimental-https --experimental-https-key ./certs/127.0.0.1-key.pem --experimental-https-cert ./certs/127.0.0.1.pem",
     "build": "next build",
     "start": "next start",
     "lint": "eslint ."

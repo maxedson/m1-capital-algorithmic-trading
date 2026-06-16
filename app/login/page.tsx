@@ -17,7 +17,12 @@ const errorMessages: Record<string, string> = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const next = params.next?.startsWith("/") ? params.next : "/trading";
-  const errorMessage = params.error ? errorMessages[params.error] ?? "Unable to sign in." : null;
+  const retryAfterSeconds = Number.parseInt(params.retryAfter ?? "", 10);
+  const errorMessage = params.error
+    ? params.error === "rate_limited"
+      ? `Too many failed attempts. Try again in ${Number.isFinite(retryAfterSeconds) ? Math.max(1, Math.ceil(retryAfterSeconds / 60)) : 15} minute(s).`
+      : errorMessages[params.error] ?? "Unable to sign in."
+    : null;
   const totpEnabled = isAppTotpEnabled();
 
   return (

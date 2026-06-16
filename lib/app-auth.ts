@@ -2,10 +2,21 @@ import { env } from "@/lib/env";
 
 const ACCESS_COOKIE_NAME = "app_access_session";
 const ACCESS_COOKIE_TTL_SECONDS = 60 * 60 * 12;
+const LOGIN_ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_ATTEMPT_LOCKOUT_MS = 15 * 60 * 1000;
+const MAX_LOGIN_ATTEMPTS = 5;
+
+type FailedLoginAttemptState = {
+  count: number;
+  firstFailureAt: number;
+  lockedUntil: number;
+};
 
 type AccessSessionPayload = {
   exp: number;
 };
+
+const failedLoginAttempts = new Map<string, FailedLoginAttemptState>();
 
 function requireAppSessionSecret() {
   if (!env.APP_SESSION_SECRET) {
@@ -73,11 +84,15 @@ export function getAppAccessCookieName() {
   return ACCESS_COOKIE_NAME;
 }
 
+function shouldUseSecureCookies() {
+  return process.env.NODE_ENV === "production" || env.SCHWAB_REDIRECT_URI?.startsWith("https://") === true;
+}
+
 export function getAppAccessCookieOptions() {
   return {
     httpOnly: true,
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookies(),
     path: "/",
     maxAge: ACCESS_COOKIE_TTL_SECONDS,
   };
@@ -118,6 +133,54 @@ export async function verifyAccessSessionToken(token: string | undefined) {
 
 export function verifyAccessPassword(password: string) {
   return Boolean(env.APP_ACCESS_PASSWORD) && password === env.APP_ACCESS_PASSWORD;
+}
+
+function getActiveFailedLoginAttemptState(clientKey: string) {
+  const state = failedLoginAttempts.get(clientKey);
+  if (!state) {
+    return null;
+  }
+
+  const now = Date.now();
+  const lockoutExpired = state.lockedUntil > 0 && state.lockedUntil <= now;
+  const windowExpired = now - state.firstFailureAt > LOGIN_ATTEMPT_WINDOW_MS;
+
+  if (lockoutExpired || windowExpired) {
+    failedLoginAttempts.delete(clientKey);
+    return null;
+  }
+
+  return state;
+}
+
+export function getLoginLockoutRemainingMs(clientKey: string) {
+  const state = getActiveFailedLoginAttemptState(clientKey);
+  if (!state || state.lockedUntil === 0) {
+    return 0;
+  }
+
+  return Math.max(0, state.lockedUntil - Date.now());
+}
+
+export function recordFailedLoginAttempt(clientKey: string) {
+  const now = Date.now();
+  const activeState = getActiveFailedLoginAttemptState(clientKey);
+  const state =
+    activeState && now - activeState.firstFailureAt <= LOGIN_ATTEMPT_WINDOW_MS
+      ? activeState
+      : { count: 0, firstFailureAt: now, lockedUntil: 0 };
+
+  state.count += 1;
+  if (state.count >= MAX_LOGIN_ATTEMPTS) {
+    state.lockedUntil = now + LOGIN_ATTEMPT_LOCKOUT_MS;
+  }
+
+  failedLoginAttempts.set(clientKey, state);
+  return Math.max(0, state.lockedUntil - now);
+}
+
+export function clearFailedLoginAttempts(clientKey: string) {
+  failedLoginAttempts.delete(clientKey);
 }
 
 function decodeBase32(input: string) {
