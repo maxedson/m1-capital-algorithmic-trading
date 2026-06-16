@@ -27,6 +27,7 @@ This is a standalone project scaffold for an algorithmic trading application tha
 - Keep all Schwab auth, token refresh, order submission, and risk controls separated into explicit modules before enabling any live trading behavior.
 - Do not commit `.env.local` or real Schwab credentials.
 - For a Vercel deployment, register your exact HTTPS callback URL, such as `https://trading.example.com/api/schwab/auth/callback`, and keep the same value in `SCHWAB_REDIRECT_URI`.
-- Set the same Schwab env vars and `APP_SESSION_SECRET` in Vercel Project Settings -> Environment Variables before testing OAuth in preview or production.
+- Set the same Schwab env vars, `APP_SESSION_SECRET`, and `APP_ACCESS_PASSWORD` in Vercel Project Settings -> Environment Variables before testing OAuth in preview or production.
+- Optional: set `APP_TOTP_SECRET_BASE32` to a base32 TOTP secret if you want the login page to require a six-digit authenticator code in addition to the password.
 - The current implementation supports OAuth login, encrypted cookie-based session persistence, market-data quote reads, and a local in-memory paper order endpoint at `app/api/paper/orders/route.ts`.
 - Live order submission is intentionally not wired yet. Paper execution should remain separate until you have account-linking, order validation, and risk controls in place.

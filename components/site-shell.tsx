@@ -18,7 +18,6 @@ type SiteShellProps = {
 };
 
 function getModeLabel(scannerState: string, executionState: string): string {
-  if (executionState === "live") return "Live Trading";
   if (executionState === "paper") return "Paper Trading";
   if (scannerState === "watchlist") return "Watchlist Only";
   return "Off";
@@ -29,6 +28,11 @@ export function SiteShell({ eyebrow, aside, children }: SiteShellProps) {
   const { scannerState, executionState } = useTrading();
   const modeLabel = getModeLabel(scannerState, executionState);
   const isStandby = scannerState === "off" && executionState === "off";
+
+  const handleLogout = async () => {
+    await fetch("/api/app-auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  };
 
   return (
     <main className="page-shell">
@@ -59,6 +63,10 @@ export function SiteShell({ eyebrow, aside, children }: SiteShellProps) {
                 );
               })}
             </nav>
+
+            <button type="button" className="btn btn-secondary sidebar-logout-btn" onClick={handleLogout}>
+              Log Out
+            </button>
           </div>
         </aside>
 
